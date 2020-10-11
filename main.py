@@ -1,8 +1,7 @@
 # Scenario Tagger made by Yondaime#1370 on Discord
 from tkinter import *
 import random
-import os.path
-from ScenarioReader import*
+from ScenarioReader import *
 
 sent = 0  # Initialize sent for checks later, 0 = not submitted, 1 = submitted, 2 = not submitted but warning displayed
 # Use the Scenario Reader Class to open the cache and get a list of all scenario names
@@ -19,16 +18,16 @@ else:
 
 # Create window and title it
 window = Tk()
-window.geometry("369x400")
+window.geometry("369x560")
 window.title("Kovaaks Scenario Randomizer")
 frameabove = Frame(window)
 frameabove.grid(row=0, column=0, columnspan=4)
 framebelow = Frame(window)
-framebelow.grid(row=10, column=0, columnspan=4, rowspan=2)
+framebelow.grid(row=11, column=0, columnspan=4, rowspan=2)
 framebottom = Frame(window)
-framebottom.grid(row=12, column=0, columnspan=4, rowspan=2)
+framebottom.grid(row=13, column=0, columnspan=4, rowspan=2)
 frameresponse = Frame(window)
-frameresponse.grid(row=14, column=0, columnspan=4, rowspan=5, sticky="w")
+frameresponse.grid(row=15, column=0, columnspan=4, rowspan=5, sticky="w")
 
 # Create label for errors
 errorlabel = Label(framebottom, text="")
@@ -42,7 +41,9 @@ responselabel.pack(fill="x")
 precurrent = Label(frameabove, text="Current Scenario: ")
 precurrent.pack(side="left")
 scenarioname = StringVar(window)
+assert len(scenarios) > 0, "You already created tags for all scenarios in your scenario.txt"
 scenarioname.set(random.choice(scenarios))
+window.clipboard_append(scenarioname.get())
 currentscen = Label(frameabove, textvariable=scenarioname)
 currentscen.pack(side="right")
 
@@ -86,7 +87,8 @@ optionstargetsize = [
     "s",
     "m",
     "l",
-    "xl"
+    "xl",
+    "varying"
 ]
 targetsize = StringVar(window)
 targetsize.set(optionstargetsize[0])
@@ -119,7 +121,8 @@ optionstargetspeed = [
     "slow",
     "medium",
     "fast",
-    "reflex"
+    "reflex",
+    "varying"
 ]
 
 targetspeed = StringVar(window)
@@ -152,7 +155,8 @@ optionsbotmovement = [
     "vertical",
     "horizontal",
     "arc",
-    "mixed"
+    "mixed",
+    "static"
 ]
 
 botmovement = StringVar(window)
@@ -178,11 +182,42 @@ optangle = OptionMenu(window, angle, *optionsangle)
 optangle.config(width="5")
 optangle.grid(row=4, column=3)
 
+# Create Dropdown for Weapontype and variable weapontype that gets updated on selection and a label infront
+weapontypelabel = Label(window, text="Weapontype:")
+weapontypelabel.grid(row=5, column=0, columnspan=1)
+
+optionsweapontype = [
+    "Hitscan",
+    "Projectile"
+]
+weapontype = StringVar(window)
+weapontype.set(optionsweapontype[0])
+
+optweapontype = OptionMenu(window, weapontype, *optionsweapontype)
+optweapontype.config(width="10")
+optweapontype.grid(row=5, column=1, columnspan=1)
+
+# Create Dropdown for Gauntlet and variable gauntlet that gets updated on selection and a label infront
+gauntletlabel = Label(window, text="Gauntlet:")
+gauntletlabel.grid(row=5, column=2, columnspan=1)
+
+optionsgauntlet = [
+    "Yes",
+    "No"
+]
+gauntlet = StringVar(window)
+gauntlet.set(optionsgauntlet[0])
+
+optgauntlet = OptionMenu(window, gauntlet, *optionsgauntlet)
+optgauntlet.config(width="5")
+optgauntlet.grid(row=5, column=3, columnspan=1)
+
 # Create Dropdown for Smoothness/Reactivity and variable resm that gets updated on selection and a label infront
 resmlabel = Label(window, text="Reactivity/Smoothness:")
-resmlabel.grid(row=5, column=0, columnspan="2")
+resmlabel.grid(row=6, column=0, columnspan=2)
 
 optionsresm = [
+    "none",
     "pure smoothness",
     "dominant smoothness",
     "mixed",
@@ -194,7 +229,49 @@ resm.set(optionsresm[0])
 
 optresm = OptionMenu(window, resm, *optionsresm)
 optresm.config(width="19")
-optresm.grid(row=5, column=2, columnspan=2)
+optresm.grid(row=6, column=2, columnspan=2)
+
+# Create Dropdown for speed and variable speed that gets updated on selection and a label infront
+speedlabel = Label(window, text="Switchspeed:")
+speedlabel.grid(row=8, column=0, columnspan=2)
+
+optionsspeed = [
+    "no switching",
+    "no speed",
+    "normal speed",
+    "pure speed"
+]
+speed = StringVar(window)
+speed.set(optionsspeed[0])
+
+optspeed = OptionMenu(window, speed, *optionsspeed)
+optspeed.config(width="19")
+optspeed.grid(row=8, column=2, columnspan=2)
+
+# Create Dropdown for perspective and variable perspective that gets updated on selection and a label infront
+perspectivelabel = Label(window, text="Perspective:")
+perspectivelabel.grid(row=9, column=0, columnspan=2)
+
+optionsperspective = [
+    "First Person",
+    "Third Person"
+]
+perspective = StringVar(window)
+perspective.set(optionsperspective[0])
+
+optperspective = OptionMenu(window, perspective, *optionsperspective)
+optperspective.config(width="19")
+optperspective.grid(row=9, column=2, columnspan=2)
+
+# Create Input for time and variable time and a label infront
+timelabel = Label(window, text="Length:")
+timelabel.grid(row=10, column=0, columnspan=2)
+
+time = StringVar()
+
+timeentry = Entry(window, textvariable=time)
+time.set(60)
+timeentry.grid(row=10, column=2, columnspan=2)
 
 
 # Method to update the Scenario
@@ -204,8 +281,14 @@ def newscen():
         sent = 0  # choice from the scenario list
         errorlabel.config(text="")
         responselabel.config(text="")
-        scenarioname.set(random.choice(scenarios))  # TODO add check with database to not have doubles
-    elif sent == 0:  # If not already submitted warn user than
+        if len(scenarios) > 0:
+            temp = random.choice(scenarios)  # Temporary Scenario name
+            scenarioname.set(temp)
+            window.clipboard_clear()
+            window.clipboard_append(temp)  # Add to clipboard
+        else:
+            errorlabel.config(text="You already created tags for all Scenarios in the Scenario.txt")
+    elif sent == 0:  # If not already submitted warn user
         errorlabel.config(text="You have not send your evaluation in,\nif you want to continue press the button again")
         sent = 2
 
@@ -213,27 +296,38 @@ def newscen():
 # Create button for new scenario
 newscenario = Button(framebelow, text="New Scenario", command=newscen)
 
+
 # Method to create new row in table, for now it checks entries and prints them
 def sendentry():
     global sent
     if sent == 1:  # Check that the evaluation was not sent in already
         errorlabel.config(text="You already sent in this evaluation.\nGet a new scenario first")
     elif sent == 0 or sent == 2:  # If not already sent
-        output = "{}:{}:{}:{}:{}:{}:{}:{}:{}:{}\n"
-        values = """The selected values are:\n
-        Aimtype: {} | Recommendation: {} | Targetsize: {}\n
-        Dodge: {} | Targetspeed: {} |Hp-Regeneration: {}\n
-        Botmovement: {} | Angle: {}\n
-        Smoothness/Reactivity: {}"""
-        output = output.format(str(scenarioname.get()), aimtype.get(), recommended.get(), targetsize.get(),
-                               dodge.get(), targetspeed.get(), regen.get(), botmovement.get(), angle.get(), resm.get())
-        output.lstrip(" ")
-        outputfile.write(output)
-        sent = 1
-        errorlabel.config(text="Your evaluation has been submitted")
-        responselabel.config(
-            text=values.format(aimtype.get(), recommended.get(), targetsize.get(), dodge.get(), targetspeed.get(),
-                               regen.get(), botmovement.get(), angle.get(), resm.get()))
+        if time.get().isdigit():  # Check if input for time is an integer
+            output = "{}:{}:{}:{}:{}:{}:{}:{}:{}:{}:{}:{}:{}:{}:{}\n"
+            values = """The selected values are:\n
+            Aimtype: {} | Recommendation: {} | Targetsize: {}\n
+            Dodge: {} | Targetspeed: {} |Hp-Regeneration: {}\n
+            Botmovement: {} | Angle: {}\n
+            Weapontype: {} | Gauntlet: {}\n
+            Smoothness/Reactivity: {} | Switchspeed: {}\n
+            Perspective: {} | Length: {}"""
+            if scenarioname.get() in scenarios:
+                scenarios.remove(scenarioname.get())
+            output = output.format(str(scenarioname.get()), aimtype.get(), recommended.get(), targetsize.get(),
+                                   dodge.get(), targetspeed.get(), regen.get(), botmovement.get(), angle.get(),
+                                   weapontype.get(), gauntlet.get(), resm.get(), speed.get(), perspective.get(),
+                                   time.get())
+            outputfile.write(output)
+            sent = 1
+            errorlabel.config(text="Your evaluation has been submitted")
+            responselabel.config(
+                text=values.format(aimtype.get(), recommended.get(), targetsize.get(),
+                                   dodge.get(), targetspeed.get(), regen.get(), botmovement.get(), angle.get(),
+                                   weapontype.get(), gauntlet.get(), resm.get(), speed.get(), perspective.get(),
+                                   time.get()))
+        else:
+            errorlabel.config(text="Please input an whole positive number as length")
 
 
 newscenario.pack(side=LEFT, fill="x")
@@ -247,6 +341,12 @@ exitbutton.pack(side=RIGHT, fill="x")
 
 # Run gui
 window.mainloop()
+
+# Update Scenariolist
+with open('scenarios.txt', 'w') as f:
+    for item in scenarios:
+        f.write("%s\n" % item)
+f.close()
 
 # Close connection file
 outputfile.close()

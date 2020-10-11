@@ -10,18 +10,24 @@ class Scenreader:
     # startindex and endindex check that u dont reiterate infinitely, by starting the next search at the end of the last
     def createscenlist(self, cache):
         scenarios: List[str] = []
-        startindex = 0
-        while cache.find(";824270|;824270|;", startindex) != -1:
-            lowest = cache.find(";824270|;824270|;", startindex)
-            startindex = lowest + len(";824270|;824270|;")
-            endindex = int(cache.find("|", startindex))
-            tempscen = str(cache[int(startindex): endindex])
-            scenarios.append(tempscen)
-        # Write all scenarios into a .txt
-        with open('scenarios.txt', 'w') as f:
-            for item in scenarios:
-                f.write("%s\n" % item)
-        f.close()
+        if not os.path.exists('scenarios.txt'):
+            startindex = 0
+            while cache.find(";824270|;824270|;", startindex) != -1:
+                lowest = cache.find(";824270|;824270|;", startindex)
+                startindex = lowest + len(";824270|;824270|;")
+                endindex = int(cache.find("|", startindex))
+                tempscen = str(cache[int(startindex): endindex])
+                scenarios.append(tempscen)
+            # Write all scenarios into a .txt, if it does not exist yet
+            with open('scenarios.txt', 'w') as f:
+                for item in scenarios:
+                    f.write("%s\n" % item)
+            f.close()
+        else:
+            f = open('scenarios.txt', "r")
+            text = f.read()
+            scenarios = text.splitlines()
+            f.close()
         return scenarios
 
     # Write the path the user input into the path.txt file in the application folder
